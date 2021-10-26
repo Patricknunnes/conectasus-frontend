@@ -30,6 +30,23 @@ export default class Login extends Component {
     };
   }
 
+
+ /* componentDidUpdate(prevProps) {
+    console.log(prevProps);
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.name && nextProps.name) {
+     // here you can do according to your need
+     // you can update the values of variables in state here 
+
+    this.setState({ name: nextProps.name });
+
+    }
+  }*/
+
+
   onChangeUsername(e) {
     this.setState({
       username: e.target.value

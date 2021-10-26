@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Switch, Route, Link } from "react-router-dom";
+import { Switch, Route, Link, Redirect } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
@@ -26,18 +26,21 @@ class App extends Component {
       showAdminBoard: false,
       currentUser: undefined,
     };
+
+    console.log("Construcotor : "+this.state);
   }
 
   componentDidMount() {
     const user = AuthService.getCurrentUser();
 
-    /*if (user) {
+    if (user) {
       this.setState({
-        currentUser: user,
-        showModeratorBoard: user.roles.includes("ROLE_MODERATOR"),
-        showAdminBoard: user.roles.includes("ROLE_ADMIN"),
+        currentUser: user //,
+     //   showModeratorBoard: user.roles.includes("ROLE_MODERATOR"),
+     //   showAdminBoard: user.roles.includes("ROLE_ADMIN"),
       });
-    }*/
+    }
+    console.log('componentDidMount'+this.setState);
     
     EventBus.on("logout", () => {
       this.logOut();
@@ -51,15 +54,23 @@ class App extends Component {
   logOut() {
     AuthService.logout();
     this.setState({
-      showModeratorBoard: false,
-      showAdminBoard: false,
+  //    showModeratorBoard: false,
+   //   showAdminBoard: false,
       currentUser: undefined,
     });
   }
 
-  render() {
-    const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
+  getUser(){
+    const user = AuthService.getCurrentUser();
+    console.log("getuser : "+user);
+    return user;
+  }
 
+  render() {
+    this.getUser();
+   // const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
+
+   const currentUser = this.getUser();
     return (
       <div>
         <nav className="navbar navbar-expand navbar-dark bg-dark">
@@ -128,15 +139,19 @@ class App extends Component {
           )}
         </nav>
 
+
+
         <div className="container mt-3">
           <Switch>
-            <Route exact path={["/", "/home"]} component={Home} />
             <Route exact path="/login" component={Login} />
-            <Route exact path="/register" component={Register} />
-            <Route exact path="/profile" component={Profile} />
-            <Route path="/user" component={BoardUser} />
-            <Route path="/mod" component={BoardModerator} />
-            <Route path="/admin" component={BoardAdmin} />
+            <ProtectedRoute exact path={["/", "/home"]}  loggedIn={currentUser} component={Home} />
+            <ProtectedRoute exact path="/register"  loggedIn={currentUser} component={Register} />
+            <ProtectedRoute exact path="/profile" loggedIn={currentUser} component={Profile} />
+            <ProtectedRoute path="/user"  loggedIn={currentUser} component={BoardUser} />
+            <ProtectedRoute path="/mod"  loggedIn={currentUser} component={BoardModerator} />
+            <ProtectedRoute path="/admin" loggedIn={currentUser} component={BoardAdmin} />
+            <ProtectedRoute  path="/teste"  loggedIn={currentUser}  component={Profile}/>
+
           </Switch>
         </div>
 
@@ -145,5 +160,33 @@ class App extends Component {
     );
   }
 }
+
+
+
+
+
+const ProtectedRoute = ({ component: Comp, loggedIn, path, ...rest }) => {
+  return (
+    <Route
+      path={path}
+      {...rest}
+      render={(props) => {
+        return loggedIn && loggedIn.auth ? (
+          <Comp {...props} />
+        ) : (
+          <Redirect
+            to={{
+              pathname: "/login",
+              state: {
+                prevLocation: path,
+                error: "You need to login first!",
+              },
+            }}
+          />
+        );
+      }}
+    />
+  );
+};
 
 export default App;
