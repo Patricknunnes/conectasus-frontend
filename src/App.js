@@ -35,9 +35,7 @@ class App extends Component {
 
     if (user) {
       this.setState({
-        currentUser: user //,
-     //   showModeratorBoard: user.roles.includes("ROLE_MODERATOR"),
-     //   showAdminBoard: user.roles.includes("ROLE_ADMIN"),
+        currentUser: user 
       });
     }
     console.log('componentDidMount'+this.setState);
@@ -54,9 +52,7 @@ class App extends Component {
   logOut() {
     AuthService.logout();
     this.setState({
-  //    showModeratorBoard: false,
-   //   showAdminBoard: false,
-      currentUser: undefined,
+      currentUser: undefined
     });
   }
 
@@ -83,39 +79,10 @@ class App extends Component {
                 Home
               </Link>
             </li>
-
-            { (
-              <li className="nav-item">
-                <Link to={"/mod"} className="nav-link">
-                  Moderator Board
-                </Link>
-              </li>
-            )}
-
-            { (
-              <li className="nav-item">
-                <Link to={"/admin"} className="nav-link">
-                  Admin Board
-                </Link>
-              </li>
-            )}
-
-            {currentUser && (
-              <li className="nav-item">
-                <Link to={"/user"} className="nav-link">
-                  User
-                </Link>
-              </li>
-            )}
           </div>
 
           {currentUser ? (
             <div className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <Link to={"/profile"} className="nav-link">
-                  {currentUser.username}
-                </Link>
-              </li>
               <li className="nav-item">
                 <a href="/login" className="nav-link" onClick={this.logOut}>
                   LogOut
@@ -127,12 +94,6 @@ class App extends Component {
               <li className="nav-item">
                 <Link to={"/login"} className="nav-link">
                   Login
-                </Link>
-              </li>
-
-              <li className="nav-item">
-                <Link to={"/register"} className="nav-link">
-                  Sign Up
                 </Link>
               </li>
             </div>

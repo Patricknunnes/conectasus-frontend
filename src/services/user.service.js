@@ -4,8 +4,13 @@ import authHeader from './auth-header';
 const API_URL = 'http://localhost:8080/';
 
 class UserService {
-  getPublicContent() {
-    return axios.get(API_URL + 'patients/1');
+
+  getFirstPage() {
+    return axios.get(API_URL + 'patients/sizedata',{ headers: authHeader() });
+  }
+
+  getNextPage(page) {
+    return axios.get(API_URL + 'patients/'+page,{ headers: authHeader() });
   }
 
   getUserBoard() {
