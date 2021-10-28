@@ -22,11 +22,9 @@ class AuthService {
         if (response.data.accessToken) {
           localStorage.setItem("user", JSON.stringify(response.data));
         }
-
         return response.data;
       })
       .catch(error => {
-       
         console.error('There was an error!', error);
     });
       

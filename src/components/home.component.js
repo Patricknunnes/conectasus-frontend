@@ -1,19 +1,18 @@
-import React, { Component, useRef } from "react";
+import React, { Component } from "react";
+import { Button } from 'react-bootstrap';
 
 import UserService from "../services/user.service";
-import EventBus from "../common/EventBus";
-
-
+//import EventBus from "../common/EventBus";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import Modal from 'react-bootstrap/Modal';
 
-
-const style = {
+/*const style = {
   height: 30,
   border: "1px solid green",
   margin: 6,
   padding: 8
-};
+};*/
 
 function buildFileSelector(){
   const fileSelector = document.createElement('input');
@@ -23,6 +22,10 @@ function buildFileSelector(){
   return fileSelector;
 }
 
+//const [show, setShow] = useState(false);
+
+//const handleClose = () => setShow(false);
+//const handleShow = () => setShow(true);
 
 export default class Home extends Component {
   constructor(props) {
@@ -33,33 +36,60 @@ export default class Home extends Component {
       items: Array.from({ length: 0 }),
       countReg: 0,
       hasMore: true,
-      page: 1
+      page: 1,
+      showDialog: false
     };
   }
+
+
+  handleClose = () =>{
+    this.setState({
+      showDialog: false
+    });
+  }
+
+  enviarSolicitacao = () =>{
+    this.setState({
+      showDialog: false
+    });
+  }
+
+  openDialog (){
+    this.setState({
+      showDialog: true
+    });
+  }
+  
 
   handleFileSelect = (e) => {
     e.preventDefault();
     this.fileSelector.click();
   }
 
- 
 
-  componentDidMount() {
+
+  creteFileSelector = ()=> {
+
+    var that = this;
 
     this.fileSelector = buildFileSelector();
     this.fileSelector.onchange = function (e) {  
-    console.log( e.target.files[0]);
+      UserService.uploadFile(e.target.files[0]).then(
+        response => {
+          console.log(response);
+          UserService.loadFile(response.data.file);
+          that.openDialog();
+        },
+        error => {
+          console.log(error);
+        }
+      );
+    };
+  }
 
-    UserService.uploadFile(e.target.files[0]).then(
-      response => {
-       console.log(response);
-        
-      },
-      error => {
-        console.log(error);
-      }
-    );
-  };
+
+
+  configureGrid() {
 
     //busca quantidade de registros e a primeira pagina
     UserService.getFirstPage().then(
@@ -78,14 +108,16 @@ export default class Home extends Component {
             (error.response && error.response.data && error.response.data.message) ||
             error.message || error.toString()
         });
-
-        if (error.response && (error.response.status === 401 || error.response.status === 500 )) {
-          EventBus.dispatch("logout");
-        }
-
       }
     );
-  
+
+  }
+
+ 
+
+  componentDidMount() {
+    this.creteFileSelector();
+    this.configureGrid();
   }
   
  
@@ -121,11 +153,6 @@ export default class Home extends Component {
             (error.response && error.response.data && error.response.data.message) ||
             error.message || error.toString()
         });
-
-        if (error.response && (error.response.status === 401 || error.response.status === 500 )) {
-          EventBus.dispatch("logout");
-        }
-
       }
     );
 
@@ -136,13 +163,10 @@ export default class Home extends Component {
   render() {
     return (
       <div className="container">
-        <header className="jumbotron">
-          <h3>{this.state.content}</h3>
-        </header>
 
-        <a className="button" href="" onClick={this.handleFileSelect}>Select files</a>
-      
-
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="primary" className="float-right" onClick={this.handleFileSelect} >+ Importar Arquivo</Button>
+        </div>
         <InfiniteScroll
           dataLength={this.state.items.length}
           next={this.fetchMoreData}
@@ -150,11 +174,57 @@ export default class Home extends Component {
           loader={<h4>Carregando...</h4>}
         >
           {this.state.items.map((i, index) => (
-            <div style={style} key={index}>
-              div - #{index} {i[0]}
+
+            <div className="row" key={index}>
+              <div className="col-sm">
+                {i['DS_CPF']}
+              </div>
+              <div className="col-sm">
+                {i['NM_PACIENTE']}
+              </div>
+              <div className="col-sm">
+                {i['UF']}
+              </div>
+
+              <div className="col-sm">
+                Autorizacao
+              </div>
+
+              <div className="col-sm">
+                Data horas resposta
+              </div>
+
+              <div className="col-sm">
+                transmitido
+              </div>
+
+              <div className="col-sm">
+                Data hora transsmissão
+              </div>
             </div>
+
           ))}
         </InfiniteScroll>
+
+
+
+
+
+
+        <Modal show={this.state.showDialog} onHide={this.handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Pacientes carregados</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Deseja enviar solicitação de autorização para os pacientes carregados?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.handleClose}>
+            Não
+          </Button>
+          <Button variant="primary" onClick={this.enviarSolicitacao}>
+            Sim
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       </div>
     );
