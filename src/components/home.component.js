@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useRef } from "react";
 
 import UserService from "../services/user.service";
 import EventBus from "../common/EventBus";
@@ -15,6 +15,14 @@ const style = {
   padding: 8
 };
 
+function buildFileSelector(){
+  const fileSelector = document.createElement('input');
+  fileSelector.setAttribute('type', 'file');
+  fileSelector.setAttribute('multiple', 'multiple');
+  fileSelector.setAttribute('accept', '.xlsx,.xls');
+  return fileSelector;
+}
+
 
 export default class Home extends Component {
   constructor(props) {
@@ -29,7 +37,29 @@ export default class Home extends Component {
     };
   }
 
+  handleFileSelect = (e) => {
+    e.preventDefault();
+    this.fileSelector.click();
+  }
+
+ 
+
   componentDidMount() {
+
+    this.fileSelector = buildFileSelector();
+    this.fileSelector.onchange = function (e) {  
+    console.log( e.target.files[0]);
+
+    UserService.uploadFile(e.target.files[0]).then(
+      response => {
+       console.log(response);
+        
+      },
+      error => {
+        console.log(error);
+      }
+    );
+  };
 
     //busca quantidade de registros e a primeira pagina
     UserService.getFirstPage().then(
@@ -55,7 +85,10 @@ export default class Home extends Component {
 
       }
     );
+  
   }
+  
+ 
 
 
  /* hasMore = () =>{
@@ -107,7 +140,8 @@ export default class Home extends Component {
           <h3>{this.state.content}</h3>
         </header>
 
-
+        <a className="button" href="" onClick={this.handleFileSelect}>Select files</a>
+      
 
         <InfiniteScroll
           dataLength={this.state.items.length}
@@ -130,3 +164,5 @@ export default class Home extends Component {
 
 //file update
 //https://www.geeksforgeeks.org/file-uploading-in-react-js/
+
+//https://codepen.io/rkotze/pen/zjRXYr
