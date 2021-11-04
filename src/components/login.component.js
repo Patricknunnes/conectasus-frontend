@@ -5,11 +5,14 @@ import CheckButton from "react-validation/build/button";
 
 import AuthService from "../services/auth.service";
 
+import './login.scss';
+
+
 const required = value => {
   if (!value) {
     return (
       <div className="alert alert-danger" role="alert">
-        This field is required!
+        Campo obrigat&oacute;rio
       </div>
     );
   }
@@ -29,23 +32,6 @@ export default class Login extends Component {
       message: ""
     };
   }
-
-
- /* componentDidUpdate(prevProps) {
-    console.log(prevProps);
-  }
-
-
-  componentWillReceiveProps(nextProps) {
-    if (!this.props.name && nextProps.name) {
-     // here you can do according to your need
-     // you can update the values of variables in state here 
-
-    this.setState({ name: nextProps.name });
-
-    }
-  }*/
-
 
   onChangeUsername(e) {
     this.setState({
@@ -68,11 +54,11 @@ export default class Login extends Component {
     });
 
     this.form.validateAll();
-
+    let that = this;
     if (this.checkBtn.context._errors.length === 0) {
       AuthService.login(this.state.username, this.state.password).then(
         () => {
-          this.props.history.push("/profile");
+          that.props.history.push("/home");
           window.location.reload();
         },
         error => {
@@ -93,19 +79,14 @@ export default class Login extends Component {
       this.setState({
         loading: false
       });
-    }
+    } 
   }
 
   render() {
     return (
       <div className="col-md-12">
         <div className="card card-container">
-          <img
-            src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-            alt="profile-img"
-            className="profile-img-card"
-          />
-
+           <div className="logo"></div>
           <Form
             onSubmit={this.handleLogin}
             ref={c => {
@@ -113,7 +94,7 @@ export default class Login extends Component {
             }}
           >
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">Usu&aacute;rio</label>
               <Input
                 type="text"
                 className="form-control"
@@ -125,7 +106,7 @@ export default class Login extends Component {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">Senha</label>
               <Input
                 type="password"
                 className="form-control"
@@ -136,15 +117,16 @@ export default class Login extends Component {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group text-center">
+            <label htmlFor=""></label>
               <button
-                className="btn btn-primary btn-block"
+                className="btn btn-login btn-block"
                 disabled={this.state.loading}
               >
                 {this.state.loading && (
                   <span className="spinner-border spinner-border-sm"></span>
                 )}
-                <span>Login</span>
+                <span>Entrar</span>
               </button>
             </div>
 
@@ -163,6 +145,7 @@ export default class Login extends Component {
             />
           </Form>
         </div>
+
       </div>
     );
   }

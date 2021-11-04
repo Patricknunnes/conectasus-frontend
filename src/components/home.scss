@@ -1,0 +1,25 @@
+#importFile {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 99;
+   
+    border: none;
+    outline: none;
+    background-color: #1F369A;
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 1em;
+    font-family: Arial, Helvetica, sans-serif;
+
+    
+  }
+  
+  #homeDiv {
+    width: 100%;
+    background: white;
+    height: 100%;
+  }

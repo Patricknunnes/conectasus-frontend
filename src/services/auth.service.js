@@ -26,6 +26,7 @@ class AuthService {
       })
       .catch(error => {
         console.error('There was an error!', error);
+        throw new Error(error);
     });
       
       ;
@@ -35,13 +36,13 @@ class AuthService {
     localStorage.removeItem("user");
   }
 
-  register(username, email, password) {
+  /*register(username, email, password) {
     return axios.post(API_URL + "signup", {
       username,
       email,
       password
     });
-  }
+  }*/
 
   getCurrentUser() {
     return JSON.parse(localStorage.getItem('user'));;

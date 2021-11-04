@@ -6,12 +6,12 @@ import "./App.css";
 import AuthService from "./services/auth.service";
 
 import Login from "./components/login.component";
-import Register from "./components/register.component";
+
 import Home from "./components/home.component";
+
+import UserService from "./services/user.service";
 import Profile from "./components/profile.component";
-import BoardUser from "./components/board-user.component";
-import BoardModerator from "./components/board-moderator.component";
-import BoardAdmin from "./components/board-admin.component";
+
 
 // import AuthVerify from "./common/auth-verify";
 import EventBus from "./common/EventBus";
@@ -19,30 +19,33 @@ import EventBus from "./common/EventBus";
 class App extends Component {
   constructor(props) {
     super(props);
+    this.props = props;
     this.logOut = this.logOut.bind(this);
 
-    this.state = {
-      showModeratorBoard: false,
-      showAdminBoard: false,
-      currentUser: undefined,
-    };
 
-    console.log("Construcotor : "+this.state);
   }
 
   componentDidMount() {
-    const user = AuthService.getCurrentUser();
+   /* const user = AuthService.getCurrentUser();
 
     if (user) {
       this.setState({
         currentUser: user 
       });
-    }
-    console.log('componentDidMount'+this.setState);
+    }*/
+  //  console.log('componentDidMount'+this.setState);
     
     EventBus.on("logout", () => {
       this.logOut();
     });
+
+    EventBus.on("error", () => {
+      this.props.history.push("/error");
+    });
+
+
+    // this.props.history.push("/home");
+    UserService.setProps(this.props);
   }
 
   componentWillUnmount() {
@@ -51,9 +54,9 @@ class App extends Component {
 
   logOut() {
     AuthService.logout();
-    this.setState({
+  /*  this.setState({
       currentUser: undefined
-    });
+    });*/
   }
 
   getUser(){
@@ -64,28 +67,21 @@ class App extends Component {
 
   render() {
     this.getUser();
-   // const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
-
+  
    const currentUser = this.getUser();
     return (
       <div>
-        <nav className="navbar navbar-expand navbar-dark bg-dark">
+        {/*<nav className="navbar navbar-expand navbar-dark bg-dark">
           <Link to={"/"} className="navbar-brand">
-            bezKoder
+           Logo idor
           </Link>
-          <div className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <Link to={"/home"} className="nav-link">
-                Home
-              </Link>
-            </li>
-          </div>
+          
 
           {currentUser ? (
             <div className="navbar-nav ml-auto">
               <li className="nav-item">
                 <a href="/login" className="nav-link" onClick={this.logOut}>
-                  LogOut
+                  Sair
                 </a>
               </li>
             </div>
@@ -99,20 +95,15 @@ class App extends Component {
             </div>
           )}
         </nav>
+          */}
 
 
-
-        <div className="container mt-3">
+        <div className="">
           <Switch>
             <Route exact path="/login" component={Login} />
+            <Route exact path="/error" component={Login} />
             <ProtectedRoute exact path={["/", "/home"]}  loggedIn={currentUser} component={Home} />
-            <ProtectedRoute exact path="/register"  loggedIn={currentUser} component={Register} />
             <ProtectedRoute exact path="/profile" loggedIn={currentUser} component={Profile} />
-            <ProtectedRoute path="/user"  loggedIn={currentUser} component={BoardUser} />
-            <ProtectedRoute path="/mod"  loggedIn={currentUser} component={BoardModerator} />
-            <ProtectedRoute path="/admin" loggedIn={currentUser} component={BoardAdmin} />
-            <ProtectedRoute  path="/teste"  loggedIn={currentUser}  component={Profile}/>
-
           </Switch>
         </div>
 
@@ -132,6 +123,9 @@ const ProtectedRoute = ({ component: Comp, loggedIn, path, ...rest }) => {
       path={path}
       {...rest}
       render={(props) => {
+
+        console.log(loggedIn +" - "+path);
+
         return loggedIn && loggedIn.auth ? (
           <Comp {...props} />
         ) : (
