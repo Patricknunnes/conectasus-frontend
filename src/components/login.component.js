@@ -2,9 +2,8 @@ import React, { Component } from "react";
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
-
 import AuthService from "../services/auth.service";
-
+import { withRouter } from "react-router";
 import './login.scss';
 
 
@@ -56,11 +55,11 @@ export default class Login extends Component {
     this.form.validateAll();
     let that = this;
     if (this.checkBtn.context._errors.length === 0) {
-      AuthService.login(this.state.username, this.state.password).then(
-        () => {
+      AuthService.login(this.state.username, this.state.password,
+        (data) => {
           that.props.history.push("/home");
-          window.location.reload();
         },
+
         error => {
           const resMessage =
             (error.response &&
@@ -73,8 +72,7 @@ export default class Login extends Component {
             loading: false,
             message: resMessage
           });
-        }
-      );
+        });
     } else {
       this.setState({
         loading: false
@@ -150,3 +148,5 @@ export default class Login extends Component {
     );
   }
 }
+
+const LoginWithRouter = withRouter(Login);

@@ -2,17 +2,9 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8080/";
 
-
-/*res.header("Access-Control-Allow-Origin", "*");
-res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");*/
-
-
 class AuthService {
-  login(username, password) {
+  login(username, password, onSucess,onFail) {
     const params = { login: username, password:password };
-
-    
     axios.defaults.headers.post['Content-Type'] ='application/json;charset=utf-8';
     axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
 
@@ -22,30 +14,21 @@ class AuthService {
         if (response.data.accessToken) {
           localStorage.setItem("user", JSON.stringify(response.data));
         }
-        return response.data;
+        onSucess(response.data);
       })
       .catch(error => {
-        console.error('There was an error!', error);
-        throw new Error(error);
-    });
-      
-      ;
+        onFail(error);
+     //  console.error('There was an error!', error);
+     //   throw new Error(error);
+      });
   }
-
   logout() {
     localStorage.removeItem("user");
   }
+   getCurrentUser() {
 
-  /*register(username, email, password) {
-    return axios.post(API_URL + "signup", {
-      username,
-      email,
-      password
-    });
-  }*/
-
-  getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));;
+    console.log("---------------------------------------getCurrentUser")
+    return  JSON.parse(localStorage.getItem('user'));
   }
 }
 

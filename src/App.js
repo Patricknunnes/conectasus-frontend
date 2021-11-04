@@ -1,19 +1,13 @@
 import React, { Component } from "react";
-import { Switch, Route, Link, Redirect } from "react-router-dom";
+import { Switch, Route,  Redirect } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./App.css";
-
 import AuthService from "./services/auth.service";
-
 import Login from "./components/login.component";
-
 import Home from "./components/home.component";
-
 import UserService from "./services/user.service";
 import Profile from "./components/profile.component";
-
-
-// import AuthVerify from "./common/auth-verify";
 import EventBus from "./common/EventBus";
 
 class App extends Component {
@@ -26,15 +20,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-   /* const user = AuthService.getCurrentUser();
 
-    if (user) {
-      this.setState({
-        currentUser: user 
-      });
-    }*/
-  //  console.log('componentDidMount'+this.setState);
-    
     EventBus.on("logout", () => {
       this.logOut();
     });
@@ -43,8 +29,6 @@ class App extends Component {
       this.props.history.push("/error");
     });
 
-
-    // this.props.history.push("/home");
     UserService.setProps(this.props);
   }
 
@@ -54,21 +38,17 @@ class App extends Component {
 
   logOut() {
     AuthService.logout();
-  /*  this.setState({
-      currentUser: undefined
-    });*/
   }
 
   getUser(){
     const user = AuthService.getCurrentUser();
-    console.log("getuser : "+user);
     return user;
   }
 
   render() {
-    this.getUser();
-  
-   const currentUser = this.getUser();
+ 
+    const currentUser =  AuthService.getCurrentUser();
+   
     return (
       <div>
         {/*<nav className="navbar navbar-expand navbar-dark bg-dark">
@@ -100,9 +80,10 @@ class App extends Component {
 
         <div className="">
           <Switch>
+          <Redirect exact from="/" to="/home" />
             <Route exact path="/login" component={Login} />
             <Route exact path="/error" component={Login} />
-            <ProtectedRoute exact path={["/", "/home"]}  loggedIn={currentUser} component={Home} />
+            <ProtectedRoute exact path={[ "/home"]}  loggedIn={currentUser} component={Home} />
             <ProtectedRoute exact path="/profile" loggedIn={currentUser} component={Profile} />
           </Switch>
         </div>
@@ -114,9 +95,6 @@ class App extends Component {
 }
 
 
-
-
-
 const ProtectedRoute = ({ component: Comp, loggedIn, path, ...rest }) => {
   return (
     <Route
@@ -124,7 +102,8 @@ const ProtectedRoute = ({ component: Comp, loggedIn, path, ...rest }) => {
       {...rest}
       render={(props) => {
 
-        console.log(loggedIn +" - "+path);
+        console.log(loggedIn +" - "+path+" - "+AuthService.getCurrentUser());
+        loggedIn = AuthService.getCurrentUser();
 
         return loggedIn && loggedIn.auth ? (
           <Comp {...props} />

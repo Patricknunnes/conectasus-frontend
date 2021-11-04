@@ -1,12 +1,9 @@
-import React, { Component } from "react";
-import { Container, Form } from "react-bootstrap";
+import React, { Component ,  forwardRef  } from "react";
+import { Form } from "react-bootstrap";
 import { Button } from 'react-bootstrap';
 
 import UserService from "../services/user.service";
 //import EventBus from "../common/EventBus";
-import InfiniteScroll from "react-infinite-scroll-component";
-
-import DropdownButton from 'react-bootstrap/DropdownButton'
 import Dropdown from 'react-bootstrap/Dropdown'
 
 import Modal from 'react-bootstrap/Modal';
@@ -15,8 +12,33 @@ import Table from 'react-bootstrap/Table';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
+
 
 import './home.scss';
+
+const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
+    <i class="bi bi-calendar text-info"   onClick={onClick} ref={ref}></i>
+));
+
+
+
+const students = [
+  {
+    id: 123,
+    name: "Student 1"
+  },
+  {
+    id: 456,
+    name: "Student 2"
+  },
+  {
+    id: 789,
+    name: "Student 3"
+  }
+];
 
 
 export default class Home extends Component {
@@ -33,11 +55,9 @@ export default class Home extends Component {
       page: 1,
       showDialog: false,
       loadedRegisters: Array.from({ length: 0 }),
+      currentDate: new Date(),
+      transmissionDate : null
     };
-
-
-
-  
 
   }
 
@@ -174,6 +194,21 @@ export default class Home extends Component {
   
   };
 
+  handleDateSelect = () => {
+
+  }
+
+  handleDateChange = () => {
+
+  }
+
+  setStartDate = (data) =>{
+
+  }
+
+
+  
+
 
   render() {
     return (
@@ -195,6 +230,13 @@ export default class Home extends Component {
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
+
+                  {students.map((i, index) => (
+
+<Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+
+                  ))}
+
                     <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
                     <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
                     <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
@@ -202,14 +244,18 @@ export default class Home extends Component {
                 </Dropdown>
               </Col>
 
+         
               <Col >
-                {/**Data da resposta*/ }
-              </Col>
+                <DatePicker
+                  selected={this.state.currentDate}
+                  onChange={(date) => this.setStartDate(date)}
+                  customInput={<ExampleCustomInput />}/>
+              </Col >
 
               <Col >
                 <Dropdown>
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  Status da trasmição
+                  Status da trasmissão
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
@@ -221,9 +267,11 @@ export default class Home extends Component {
               </Col>
 
               <Col >
-                {/**Data da transmição */}
-              </Col>
-
+                <DatePicker
+                  selected={this.state.transmissionDate}
+                  onChange={(date) =>  this.setState({transmissionDate: date}) }
+                  customInput={<ExampleCustomInput />}/>
+              </Col >
               <Col >
                 <Dropdown>
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
@@ -293,6 +341,9 @@ export default class Home extends Component {
       </Table>
       </div>
 
+      {  this.state.items &&  this.state.items.length  >0 ? null : <div>Você não possui nenhum item na lista. Faça uma nova busca ou upload de arquivos.</div> }
+
+
        {/* TODO: carregando
           */}
 
@@ -325,3 +376,6 @@ export default class Home extends Component {
 
 //outra opção de scroll
 /** https://stackoverflow.com/questions/39325581/how-to-add-scroll-event-in-react-component/39326139 */
+
+
+//https://reactdatepicker.com/
