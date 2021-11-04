@@ -5,8 +5,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./App.css";
 import AuthService from "./services/auth.service";
 import Login from "./components/login.component";
+import Error from "./components/error.component";
 import Home from "./components/home.component";
-import UserService from "./services/user.service";
 import Profile from "./components/profile.component";
 import EventBus from "./common/EventBus";
 
@@ -16,11 +16,9 @@ class App extends Component {
     this.props = props;
     this.logOut = this.logOut.bind(this);
 
-
   }
 
   componentDidMount() {
-
     EventBus.on("logout", () => {
       this.logOut();
     });
@@ -29,7 +27,7 @@ class App extends Component {
       this.props.history.push("/error");
     });
 
-    UserService.setProps(this.props);
+   
   }
 
   componentWillUnmount() {
@@ -82,7 +80,7 @@ class App extends Component {
           <Switch>
           <Redirect exact from="/" to="/home" />
             <Route exact path="/login" component={Login} />
-            <Route exact path="/error" component={Login} />
+            <Route exact path="/error" component={Error} />
             <ProtectedRoute exact path={[ "/home"]}  loggedIn={currentUser} component={Home} />
             <ProtectedRoute exact path="/profile" loggedIn={currentUser} component={Profile} />
           </Switch>

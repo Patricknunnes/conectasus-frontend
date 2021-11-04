@@ -163,6 +163,9 @@ export default class Home extends Component {
   componentDidMount() {
     this.creteFileSelector();
     this.configureGrid();
+
+    //
+    UserService.setProps(this.props);
   }
  
 
