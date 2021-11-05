@@ -38,10 +38,11 @@ class App extends Component {
     AuthService.logout();
   }
 
+  /*
   getUser(){
     const user = AuthService.getCurrentUser();
     return user;
-  }
+  }*/
 
   render() {
  
@@ -99,10 +100,7 @@ const ProtectedRoute = ({ component: Comp, loggedIn, path, ...rest }) => {
       path={path}
       {...rest}
       render={(props) => {
-
-        console.log(loggedIn +" - "+path+" - "+AuthService.getCurrentUser());
         loggedIn = AuthService.getCurrentUser();
-
         return loggedIn && loggedIn.auth ? (
           <Comp {...props} />
         ) : (

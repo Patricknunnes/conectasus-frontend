@@ -15,28 +15,91 @@ import Row from 'react-bootstrap/Row';
 import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
-
+import AuthService from "../services/auth.service";
 
 import './home.scss';
 
 const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
-    <i class="bi bi-calendar text-info"   onClick={onClick} ref={ref}></i>
+    <i className="bi bi-calendar text-info"   onClick={onClick} ref={ref}></i>
 ));
 
+const estados =[
+
+  {id: "" , name: "Selecione" },
+  {id: "AC" , name: "Acre" },
+  {id: "AL" , name: "Alagoas" },
+  {id: "AP" , name: "Amapá" },
+  {id: "AM" , name: "Amazonas" },
+  {id: "BA" , name: "Bahia" },
+  {id: "CE" , name: "Ceará" },
+  {id: "DF" , name: "Distrito Federal" },
+  {id: "ES" , name: "Espirito Santo" },
+  {id: "GO" , name: "Goiás" },
+  {id: "MA" , name: "Maranhão" },
+  {id: "MS" , name: "Mato Grosso do Sul" },
+  {id: "MT" , name: "Mato Grosso" },
+  {id: "MG" , name: "Minas Gerais" },
+  {id: "PA" , name: "Pará" },
+  {id: "PB" , name: "Paraíba" },
+  {id: "PR" , name: "Paraná" },
+  {id: "PE" , name: "Pernambuco" },
+  {id: "PI" , name: "Piauí" },
+  {id: "RJ" , name: "Rio de Janeiro" },
+  {id: "RN" , name: "Rio Grande do Norte" },
+  {id: "RS" , name: "Rio Grande do Sul" },
+  {id: "RO" , name: "Rondônia" },
+  {id: "RR" , name: "Roraima" },
+  {id: "SC" , name: "Santa Catarina" },
+  {id: "SP" , name: "São Paulo" },
+  {id: "SE" , name: "Sergipe" },
+  {id: "TO" , name: "Tocantins" }
 
 
-const students = [
+];
+
+const statusWhats = [
   {
-    id: 123,
-    name: "Student 1"
+    id: 'A',
+    name: "Autorizado"
   },
   {
-    id: 456,
-    name: "Student 2"
+    id: 'W',
+    name: "Enviado"
   },
   {
-    id: 789,
-    name: "Student 3"
+    id: 'N',
+    name: "Não autorizado"
+  },
+  {
+    id: '',
+    name: "Não enviado"
+  },
+  {
+    id: 'E',
+    name: "Autorizado email"
+  }
+];
+
+const statusTransmission = [
+  {
+    id: 'T',
+    name: "Transmitido"
+  },
+  {
+    id: 'A',
+    name: "Aguardando transmissão"
+  },
+  {
+    id: 'P',
+    name: "Parcial"
+  },
+  {
+    id: 'E',
+    name: "Erro"
+  },
+  {
+    id: '',
+    name: ""
   }
 ];
 
@@ -218,6 +281,29 @@ export default class Home extends Component {
       
       
       <div  id="homeDiv">
+
+<header>
+      
+      <div className="navbar navbar-dark bg-dark box-shadow">
+        <div className="container d-flex justify-content-between">
+        
+          <img
+            src="../assets/logo-idor.svg"
+            width="30"
+            height="30"
+            className="d-inline-block align-top"
+           // alt="React Bootstrap logo"
+          />
+          <div className="navbar-brand d-flex align-items-center">
+              <row>{ AuthService.getCurrentUser().nm_pessoa}</row>
+              <a href="/login" className="error-i"  onClick={()=> AuthService.logout()} >Sair</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+
+
           <div id="filters">
 
 
@@ -233,16 +319,9 @@ export default class Home extends Component {
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
-
-                  {students.map((i, index) => (
-
-<Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-
+                  {statusWhats.map((i, index) => (
+                    <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
                   ))}
-
-                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
               </Col>
@@ -262,9 +341,10 @@ export default class Home extends Component {
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
-                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                  {statusTransmission.map((i, index) => (
+                    <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
+                  ))}
+                  
                   </Dropdown.Menu>
                 </Dropdown>
               </Col>
@@ -280,11 +360,10 @@ export default class Home extends Component {
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
                   UF
                   </Dropdown.Toggle>
-
                   <Dropdown.Menu>
-                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                    {estados.map((i, index) => (
+                      <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
+                    ))}
                   </Dropdown.Menu>
                 </Dropdown>
               </Col>

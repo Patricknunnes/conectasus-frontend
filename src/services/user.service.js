@@ -11,8 +11,12 @@ class UserService {
   }
 
   configureInterceptor() {
-    let props = this.props;
+   
+    let that = this;
     axios.interceptors.response.use(function (response) {
+      console.log('=====>response'+response);
+      console.log('=====>response'+response.data);
+      console.log(that.props);
     /*  if (response && response.headers && response.headers['x-acess-token']) {
         let user = JSON.parse(localStorage.getItem("user"))
         user.accessToken = response.headers['x-acess-token'];
@@ -22,11 +26,14 @@ class UserService {
     }, function (error) {
    
       if ((error.response && (error.response.status === 401 || error.response.status === 500 )) ) {
+      
             EventBus.dispatch("logout");
         } else {
-          EventBus.dispatch("error");
-      //    props.history.push("/error");
-        //  this.context.history.push('/path')
+          if(that.props && that.props.history){
+            that.props.history.push("/error");
+          }else{
+            EventBus.dispatch("logout");
+          }
         }
     });
 
@@ -34,10 +41,6 @@ class UserService {
 
   setProps(props){
     this.props = props;
-  }
-
-  getProps(){
-    return   this.props;
   }
 
   getFirstPage() {
