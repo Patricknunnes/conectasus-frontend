@@ -168,9 +168,7 @@ export default class Home extends Component {
 
 
   onScrollTable= (e) => {
-   
     if (e.target.offsetHeight + e.target.scrollTop >= e.target.scrollHeight) {
-      console.log("Scroll = "+e);
       this.fetchMoreData();
     }
   }
@@ -282,31 +280,30 @@ export default class Home extends Component {
       
       <div  id="homeDiv">
 
-<header>
+      <header>
       
-      <div className="navbar navbar-dark bg-dark box-shadow">
-        <div className="container d-flex justify-content-between">
-        
-          <img
-            src="../assets/logo-idor.svg"
-            width="30"
-            height="30"
-            className="d-inline-block align-top"
-           // alt="React Bootstrap logo"
-          />
-          <div className="navbar-brand d-flex align-items-center">
-              <row>{ AuthService.getCurrentUser().nm_pessoa}</row>
-              <a href="/login" className="error-i"  onClick={()=> AuthService.logout()} >Sair</a>
+        <div className="navbar navbar-dark bg-dark box-shadow">
+          <div className="container d-flex justify-content-between">
+          
+            <img
+              src="../assets/logo-idor.svg"
+              width="30"
+              height="30"
+              className="d-inline-block align-top"
+            // alt="React Bootstrap logo"
+            />
+            <div className="navbar-brand d-flex align-items-center">
+                <Row>{ AuthService.getCurrentUser().nm_pessoa}</Row>
+                <Row> <a href="/login" className="error-i"  onClick={()=> AuthService.logout()} >Sair</a></Row>
+            </div>
+
           </div>
         </div>
-      </div>
-    </header>
+      </header>
 
 
 
           <div id="filters">
-
-
 
             <Row className="mx-0">
               <Col >
@@ -369,25 +366,9 @@ export default class Home extends Component {
               </Col>
             </Row>
 
-
-
-
-            
-           
-
-          
-
-           
-
-           
-
-          
-
-          
-            
-
           </div>
         <div>Lista de pessoas vacinadas</div>
+        <div> ações</div>
         <button  onClick={this.handleFileSelect.bind(this)}  id="importFile" title="Go to top">+ Importar Arquivo</button>
         <input type='file' id='file' ref={this.inputFile} style={{display: 'none'}}/>
 
