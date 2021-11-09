@@ -572,7 +572,7 @@ export default class Home extends Component {
                 <td>{index}</td>
                 <td>{i['NM_PACIENTE']}</td>
                 <td>{i['DS_CPF']}</td>
-                <td>{i['UF']}</td>
+                <td>{i['DS_UF']}</td>
                 <td>{i['DS_AUTORIZADO']}</td>
                 <td>{i['DT_RESPOSTA']}</td>
                 <td>{i['DS_STATUS_TRANSMISSAO']}</td>
