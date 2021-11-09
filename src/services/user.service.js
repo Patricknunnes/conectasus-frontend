@@ -14,14 +14,14 @@ class UserService {
    
     let that = this;
     axios.interceptors.response.use(function (response) {
-      console.log('=====>response'+response);
-      console.log('=====>response'+response.data);
+    //  console.log('=====>response'+response);
+    //  console.log('=====>response'+response.data);
       console.log(that.props);
-    /*  if (response && response.headers && response.headers['x-acess-token']) {
+      if (response && response.headers && response.headers['x-acess-token']) {
         let user = JSON.parse(localStorage.getItem("user"))
         user.accessToken = response.headers['x-acess-token'];
         localStorage.setItem("user", JSON.stringify(user));
-      }*/
+      }
       return response;
     }, function (error) {
    
@@ -43,12 +43,70 @@ class UserService {
     this.props = props;
   }
 
-  getFirstPage() {
-    return axios.get(API_URL + 'patients/sizedata',{ headers: authHeader() });
+  getFirstPage(pageP, nameP, authStatusP, authDateP, transStatusP, transDataP, stateP) {
+
+    let config = {
+      headers: authHeader(),
+      params: {
+        page: pageP,
+        name: nameP, 
+        authStatus: authStatusP, 
+        authDate: authDateP, 
+        transStatus: transStatusP, 
+        transData: transDataP, 
+        state: stateP
+      },
+    }
+
+    return axios.get(API_URL + 'patients/sizedata', config);
   }
 
-  getNextPage(page) {
-    return axios.get(API_URL + 'patients/'+page,{ headers: authHeader() });
+  /**
+   * 
+   * @param {*} pageP 
+   * @param {*} nameP 
+   * @param {*} authStatusP 
+   * @param {*} authDateP 
+   * @param {*} transStatusP 
+   * @param {*} transDataP 
+   * @param {*} stateP Estado (país)
+   * @returns 
+   */
+ /* getFilteredData(pageP, nameP, authStatusP, authDateP, transStatusP, transDataP, stateP) {
+
+    let config = {
+      headers: authHeader(),
+      params: {
+        page: pageP,
+        name: nameP, 
+        authStatus: authStatusP, 
+        authDate: authDateP, 
+        transStatus: transStatusP, 
+        transData: transDataP, 
+        state: stateP
+      },
+    }
+    
+  //  return axios.get(API_URL + 'patients/filter', config);
+ // return axios.get(API_URL + 'patients/'+pageP, config);
+  
+  }*/
+
+  getNextPage(pageP, nameP, authStatusP, authDateP, transStatusP, transDataP, stateP) {
+
+    let config = {
+      headers: authHeader(),
+      params: {
+        page: pageP,
+        name: nameP, 
+        authStatus: authStatusP, 
+        authDate: authDateP, 
+        transStatus: transStatusP, 
+        transData: transDataP, 
+        state: stateP
+      },
+    }
+    return axios.get(API_URL + 'patients/'+pageP, config);
   }
 
   uploadFile(file) {
@@ -64,10 +122,22 @@ class UserService {
     return axios.post(API_URL +"xlsx/load", body, { headers: authHeader() }); 
   }
 
+  //TODO - unificar tudo com request de baixo, por cpf
   requestAutorizathion(data) {
     const body = {registers: data };
     return axios.post(API_URL +"contact/requestAutorizathion", body, { headers: authHeader() }); 
   }
+
+  requestAutorizathionByCPF(data) {
+    const body = {registers: data };
+    return axios.post(API_URL +"contact/requestAutorizathionCPF", body, { headers: authHeader() }); 
+  }
+
+  sendRIARByCPF(data) {
+    const body = {registers: data };
+    return axios.post(API_URL +"government/sendRIAR", body, { headers: authHeader() }); 
+  }
+
 }
 
 export default new UserService();

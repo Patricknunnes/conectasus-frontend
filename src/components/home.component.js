@@ -71,7 +71,7 @@ const statusWhats = [
     name: "Não autorizado"
   },
   {
-    id: '',
+    id: 'NE',
     name: "Não enviado"
   },
   {
@@ -118,20 +118,28 @@ export default class Home extends Component {
       page: 1,
       showDialog: false,
       loadedRegisters: Array.from({ length: 0 }),
-      currentDate: new Date(),
-      transmissionDate : null
+      authorizationStatus: null,//status da autorização
+      authorizationDate: null, //data da autorização
+      transmissionStatus: null, //Status da transmissão
+      transmissionDate : null, //data da transmissão
+      searchText :null,
+      state: null //estado
     };
 
   }
-
   
-
+  /**
+   * 
+   */
   clearLoadedRegisters = () =>{
     this.setState({
       loadedRegisters: Array.from({ length: 0 })
     });
   }
 
+  /**
+   * 
+   */
   handleClose = () =>{
     this.setState({
       showDialog: false,
@@ -140,13 +148,16 @@ export default class Home extends Component {
     this.configureGrid();
   }
 
+  /***
+   * 
+   */
   enviarSolicitacao = () =>{
 
     //envia os dados pro server
     UserService.requestAutorizathion(this.state.loadedRegisters).then(
       response => {
         this.configureGrid();
-      });
+    });
 
     this.setState({
       showDialog: false,
@@ -154,19 +165,27 @@ export default class Home extends Component {
     });
   }
 
+  /**
+   * 
+   */
   openDialog (){
     this.setState({
       showDialog: true
     });
   }
   
-
+  /**
+   * 
+   * @param {*} e 
+   */
   handleFileSelect = (e) => {
     e.preventDefault();
     this.inputFile.current.click();
   }
 
-
+  /***
+   * 
+   */
   onScrollTable= (e) => {
     if (e.target.offsetHeight + e.target.scrollTop >= e.target.scrollHeight) {
       this.fetchMoreData();
@@ -174,10 +193,40 @@ export default class Home extends Component {
   }
 
 
-  configureGrid() {
+  atualizarQuery() {
+    this.setState({
+      page: 1,
+      items: Array.from({ length: 0 }),
+      countReg: 0,
+      hasMore: true
+    });
 
+    var copy = {...this.state };
+    copy.page= 1;
+    copy.items= Array.from({ length: 0 });
+    copy.countReg= 0;
+    this.configureGrid(copy);
+
+  }
+
+  /***
+   * 
+   */
+  configureGrid(data) {
+
+    if(!data) {
+      data = this.state;
+    }
     //busca quantidade de registros e a primeira pagina
-    UserService.getFirstPage().then(
+    UserService.getFirstPage(
+      data.page,
+      data.searchText,
+      data.authorizationStatus,//status da autorização
+      data.authorizationDate, //data da autorização
+      data.transmissionStatus, //Status da transmissão
+      data.transmissionDate, //data da transmissão
+      data.state
+    ).then(
       response => {
         this.setState({
           items: response.data.registers,
@@ -198,8 +247,11 @@ export default class Home extends Component {
 
   }
 
+  /**
+   * 
+   */
   creteFileSelector() {
-  var that = this;
+    var that = this;
 
   this.inputFile.current.onchange = function (e) {  
     UserService.uploadFile(e.target.files[0]).then(
@@ -219,22 +271,37 @@ export default class Home extends Component {
         e.target.value = null;
       }
     )};
- }
+  }
 
+  /**
+   * 
+   */
   componentDidMount() {
     this.creteFileSelector();
     this.configureGrid();
-
     //
     UserService.setProps(this.props);
   }
  
 
+  /**
+   * 
+   */
   fetchMoreData = () => {
-
-  let pageNumber =  this.state.page +1;
+    let pageNumber =  this.state.page +1;
+    var data = this.state;
+    data.page = pageNumber;
   
-    UserService.getNextPage(pageNumber).then(
+    UserService.getNextPage(
+      data.page,
+      data.searchText,
+      data.authorizationStatus,//status da autorização
+      data.authorizationDate, //data da autorização
+      data.transmissionStatus, //Status da transmissão
+      data.transmissionDate, //data da transmissão
+      data.state
+
+    ).then(
       response => {
 
         let tempItems = this.state.items.concat(response.data);
@@ -258,27 +325,126 @@ export default class Home extends Component {
   
   };
 
-  handleDateSelect = () => {
-
+  componentDidUpdate() {
+   // console.log('vai atualizar');
   }
 
-  handleDateChange = () => {
+  /**
+   * 
+   * @param {*} evt 
+   */
+  doSearch = (evt) =>{
+    var that = this;
+    
+    var searchText = evt.target.value; // this is the search text
+    if(this.timeout) clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+    that.setState({searchText: searchText });
+    var copy = {...this.state };
+    copy.searchText = searchText;
+    this.configureGrid(copy);
 
+    }, 300);
   }
 
-  setStartDate = (data) =>{
-
+  /**
+   * 
+   * @param {*} evt 
+   * @param {*} eventKey 
+   */
+  handleAuthorization = (evt, eventKey)  => {
+    evt.preventDefault();
+    this.setState({authorizationStatus: eventKey});
+   
+    var copy = {...this.state };
+    copy.authorizationStatus = eventKey;
+    this.configureGrid(copy);
   }
 
+  /**
+   * 
+   * @param {*} date 
+   */
+  handleAuthorizationDate = (date) => {
+    this.setState({authorizationDate: date});
+    var copy = {...this.state };
+    copy.authorizationDate = date;
+    this.configureGrid(copy);
+  }
 
+  /**
+   * 
+   * @param {*} date 
+   */
+  handleTransmissionDate = (date) => {
+    this.setState({transmissionDate: date});
+    var copy = {...this.state };
+    copy.authorizationDate = date;
+    this.configureGrid(copy);
+  }
   
 
+  /**
+   * 
+   * @param {*} evt 
+   * @param {*} eventKey 
+   */
+  handleTransmission = (evt, eventKey)  => {
+    evt.preventDefault();
+    this.setState({transmissionStatus: eventKey});
 
-  render() {
+    var copy = {...this.state };
+    copy.transmissionStatus = eventKey;
+    this.configureGrid(copy);
+  }
+
+  /**
+   * 
+   * @param {*} evt 
+   * @param {*} eventKey 
+   */
+  handleState = (evt, eventKey)  => {
+    evt.preventDefault();
+    this.setState({state: eventKey});
+   
+    var copy = {...this.state };
+    copy.state = eventKey;
+    this.configureGrid(copy);
+  }
+
+
+  filterCPF() {
+    return this.state.items
+      .map(p => p['DS_CPF']);
+  }
+
+  sendWhatsApp() {
+    //envia os dados pro server
+    UserService.requestAutorizathionByCPF(this.filterCPF()).then(
+      response => {
+        this.configureGrid();
+    });
+
+  }
+
+  sendRIAR(){
+   // aaa
+
+    //envia os dados pro server
+    UserService.sendRIARByCPF(this.filterCPF()).then(
+      response => {
+        this.configureGrid();
+    });
+
+  }
+
+ 
+  /**
+   * 
+   * @returns 
+   */
+  renderHeader = () => {
     return (
-      
-      
-      <div  id="homeDiv">
 
       <header>
       
@@ -301,78 +467,92 @@ export default class Home extends Component {
         </div>
       </header>
 
+    );
+  }
 
+  /**
+   * 
+   * @returns 
+   */
+  renderFilters = () => {
 
-          <div id="filters">
+    return (
+      <div id="filters">
+        <Row className="mx-0">
+          <Col >
+            <Form.Control size="sm" name="foo" placeholder="Pesquise pelo nome ou CPF"   onChange={this.doSearch} />
+          </Col>
+          <Col >
+            <Dropdown >
+              <Dropdown.Toggle variant="success" id="dropdown-basic">
+              Status da autorização
+              </Dropdown.Toggle>
 
-            <Row className="mx-0">
-              <Col >
-                <Form.Control size="sm" name="foo" placeholder="Pesquise pelo nome ou CPF" />
-              </Col>
-              <Col >
-                <Dropdown>
-                  <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  Status da autorização
-                  </Dropdown.Toggle>
+              <Dropdown.Menu>
+              {statusWhats.map((i, index) => (
+                <Dropdown.Item href={i.id} onClick={(evt) =>this.handleAuthorization(evt, i.id)} key={index}  eventKey={i.id}     >{i.name}</Dropdown.Item>
+              ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
 
-                  <Dropdown.Menu>
-                  {statusWhats.map((i, index) => (
-                    <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
+      
+          <Col >
+          Data da resposta
+            <DatePicker
+              selected={this.state.authorizationDate}
+              onChange={this.handleAuthorizationDate}
+              customInput={<ExampleCustomInput />}/>
+          </Col >
+
+          <Col >
+            <Dropdown>
+              <Dropdown.Toggle variant="success" id="dropdown-basic">
+              Status da trasmissão
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+              {statusTransmission.map((i, index) => (
+                <Dropdown.Item href={i.id} onClick={(evt) =>this.handleTransmission(evt, i.id)} key={index}  eventKey={i.id}     >{i.name}</Dropdown.Item>
+              ))}
+              
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+
+          <Col >
+            Data da transmissão
+            <DatePicker
+              selected={this.state.transmissionDate}
+              onChange={this.handleTransmissionDate}
+              customInput={<ExampleCustomInput />}/>
+          </Col >
+          <Col >
+            <Dropdown>
+              <Dropdown.Toggle variant="success" id="dropdown-basic">
+              UF
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {estados.map((i, index) => (
+                  <Dropdown.Item href={i.id} onClick={(evt) =>this.handleState(evt, i.id)} key={index}  eventKey={i.id}     >{i.name}</Dropdown.Item>
                   ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Col>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+        </Row>
+      </div>
 
-         
-              <Col >
-                <DatePicker
-                  selected={this.state.currentDate}
-                  onChange={(date) => this.setStartDate(date)}
-                  customInput={<ExampleCustomInput />}/>
-              </Col >
+    );
+  }
 
-              <Col >
-                <Dropdown>
-                  <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  Status da trasmissão
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu>
-                  {statusTransmission.map((i, index) => (
-                    <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
-                  ))}
-                  
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Col>
-
-              <Col >
-                <DatePicker
-                  selected={this.state.transmissionDate}
-                  onChange={(date) =>  this.setState({transmissionDate: date}) }
-                  customInput={<ExampleCustomInput />}/>
-              </Col >
-              <Col >
-                <Dropdown>
-                  <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  UF
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {estados.map((i, index) => (
-                      <Dropdown.Item href={'#/action-'+i.id}>{i.name}</Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Col>
-            </Row>
-
-          </div>
-        <div>Lista de pessoas vacinadas</div>
-        <div> ações</div>
-        <button  onClick={this.handleFileSelect.bind(this)}  id="importFile" title="Go to top">+ Importar Arquivo</button>
-        <input type='file' id='file' ref={this.inputFile} style={{display: 'none'}}/>
-
-        <div id="scrollTable"  onScroll={this.onScrollTable.bind(this)} style={{ height: 300, overflowY: "scroll" }}>
+  /**
+   * 
+   * @returns 
+   */
+  renderTable = () => {
+    
+    return(
+      <div id="scrollTable"  onScroll={this.onScrollTable.bind(this)} style={{ height: 300, overflowY: "scroll" }}>
         <Table striped bordered hover >
         <thead>
           <tr>
@@ -390,40 +570,83 @@ export default class Home extends Component {
           {this.state.items.map((i, index) => (
               <tr  key={index}>
                 <td>{index}</td>
-                <td>{i['DS_CPF']}</td>
                 <td>{i['NM_PACIENTE']}</td>
+                <td>{i['DS_CPF']}</td>
                 <td>{i['UF']}</td>
                 <td>{i['DS_AUTORIZADO']}</td>
                 <td>{i['DT_RESPOSTA']}</td>
-                <td>{i['DS_ENVIO_GOVERNO']}</td>
+                <td>{i['DS_STATUS_TRANSMISSAO']}</td>
                 <td>{i['DT_ENVIO_GOVERNO']}</td>
                 
               </tr>
             ))}
         </tbody>
       </Table>
-      </div>
+    </div>
+      
+    );
+  }
 
-      {  this.state.items &&  this.state.items.length  >0 ? null : <div>Você não possui nenhum item na lista. Faça uma nova busca ou upload de arquivos.</div> }
+  /**
+   * 
+   * @returns 
+   */
+  renderEmptyRegisters = () =>{
+    return (
+      this.state.items &&  this.state.items.length  >0 ? null : <div>Você não possui nenhum item na lista. Faça uma nova busca ou upload de arquivos.</div> 
+    );
+  }
 
+  renderModalLoadedFields = () => {
+    return (
+      <Modal show={this.state.showDialog} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Pacientes carregados</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Foram carregados {this.state.loadedRegisters.length} registros. Deseja enviar solicitação de autorização para os pacientes carregados?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={this.handleClose}>
+              Não
+            </Button>
+            <Button variant="primary" onClick={this.enviarSolicitacao}>
+              Sim
+            </Button>
+          </Modal.Footer>
+        </Modal>
+    );
+  }
+
+  /**
+   * 
+   * @returns 
+   */
+  render() {
+    return (
+      
+      <div  id="homeDiv">
+
+        {this.renderHeader()}
+        {this.renderFilters()}
+   
+        <div>Lista de pessoas vacinadas</div>
+        <div>
+          <Button variant="link"  onClick={this.sendWhatsApp.bind(this)}>Enviar whatsapp</Button>
+          <Button variant="link"  onClick={this.atualizarQuery.bind(this)}>Atualizar</Button>
+          <Button variant="link"  onClick={this.sendRIAR.bind(this)}>Enviar para governo</Button>
+        </div>
+        <button  onClick={this.handleFileSelect.bind(this)}  id="importFile" title="Go to top">+ Importar Arquivo</button>
+        <input type='file' id='file' ref={this.inputFile} style={{display: 'none'}}/>
+
+        {this.renderTable()}
+
+        {this.renderEmptyRegisters()}
+
+      
 
        {/* TODO: carregando
           */}
 
-        <Modal show={this.state.showDialog} onHide={this.handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Pacientes carregados</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Foram carregados {this.state.loadedRegisters.length} registros. Deseja enviar solicitação de autorização para os pacientes carregados?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
-            Não
-          </Button>
-          <Button variant="primary" onClick={this.enviarSolicitacao}>
-            Sim
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {this.renderModalLoadedFields()};
 
       </div>
     );

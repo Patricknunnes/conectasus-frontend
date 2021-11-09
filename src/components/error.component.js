@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router";
+//import { withRouter } from "react-router";
 import './error.scss';
 import AuthService from "../services/auth.service";
 
 export default class Error extends Component {
-  constructor(props) {
+ /* constructor(props) {
     super(props);
 
-  }
+  }*/
 
   logOut() {
     AuthService.logout();
@@ -29,4 +29,4 @@ export default class Error extends Component {
   }
 }
 
-const ErrorWithRouter = withRouter(Error);
+//const ErrorWithRouter = withRouter(Error);
