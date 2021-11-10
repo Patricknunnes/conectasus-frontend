@@ -485,7 +485,6 @@ export default class Home extends Component {
                 </a>
               </div>
             </div>
-a
           </div>
         </div>
       </header>
@@ -641,7 +640,7 @@ a
                 <td>
               
                 
-                  { i['DS_STATUS_TRANSMISSAO'].startsWith("Aguardando") ?
+                  {i['DS_STATUS_TRANSMISSAO'] && i['DS_STATUS_TRANSMISSAO'].startsWith("Aguardando") ?
                     i['DS_STATUS_TRANSMISSAO']
                   :
                   <Button variant="link"  onClick={()=> this.openTransmissionDetail(i['DS_CPF'])}>
