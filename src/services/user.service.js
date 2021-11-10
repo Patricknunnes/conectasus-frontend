@@ -138,6 +138,13 @@ class UserService {
     return axios.post(API_URL +"government/sendRIAR", body, { headers: authHeader() }); 
   }
 
+  getDetailStatusRIAR(cpf) {
+    let config = {
+      headers: authHeader(),
+    }
+    return axios.get(API_URL + 'government/details/'+cpf, config);
+  }
+
 }
 
 export default new UserService();
