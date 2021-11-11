@@ -81,17 +81,17 @@ const statusTransmission = [
     id: 'A',
     name: "Aguardando transmissão"
   },
-  {
+ /* {
     id: 'P',
     name: "Parcial"
-  },
+  },*/
   {
     id: 'E',
     name: "Erro"
   },
   {
     id: '',
-    name: ""
+    name: 'Todos'
   }
 ]
 
@@ -631,7 +631,7 @@ export default class Home extends Component {
           <tbody>
             {this.state.items.map((i, index) => (
               <tr key={index}>
-                <td>{index}</td>
+                <td>{index+1}</td>
                 <td>{i['NM_PACIENTE']}</td>
                 <td>{i['DS_CPF']}</td>
                 <td>{i['DS_UF']}</td>
@@ -722,7 +722,8 @@ export default class Home extends Component {
   //  : false,
   //  detailsTransmission: Array.from({ length: 0 })
     return (
-      <Modal show={this.state.showDetailsTransmission} onHide={this.handleCloseTransmissionDetail}>
+      <Modal show={this.state.showDetailsTransmission} onHide={this.handleCloseTransmissionDetail}
+      size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalhes da transmissão</Modal.Title>
         </Modal.Header>
@@ -745,7 +746,7 @@ export default class Home extends Component {
           <tbody>
             {this.state.detailsTransmission.map((i, index) => (
               <tr key={index}>
-                <td>{index}</td>
+                <td>{index+1}</td>
                 {/* <td>{i['IE_STATUS_ENVIO']}</td>*/}
                 <td>{i['NR_DOSE']}</td>
                 {/* <td>{i['DS_CONTEUDO_HL7']}</td>*/}
