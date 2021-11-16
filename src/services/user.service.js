@@ -28,13 +28,13 @@ class UserService {
       if ((error.response && (error.response.status === 401 || error.response.status === 500 )) ) {
       
             EventBus.dispatch("logout");
-        } else {
-          if(that.props && that.props.history){
-            that.props.history.push("/error");
-          }else{
-            EventBus.dispatch("logout");
-          }
+        } 
+        if(that.props && that.props.history){
+          that.props.history.push("/error");
+        }else{
+          EventBus.dispatch("logout");
         }
+        return Promise.reject(error.response || error.message);
     });
 
   }
@@ -60,37 +60,6 @@ class UserService {
 
     return axios.get(API_URL + 'patients/sizedata', config);
   }
-
-  /**
-   * 
-   * @param {*} pageP 
-   * @param {*} nameP 
-   * @param {*} authStatusP 
-   * @param {*} authDateP 
-   * @param {*} transStatusP 
-   * @param {*} transDataP 
-   * @param {*} stateP Estado (país)
-   * @returns 
-   */
- /* getFilteredData(pageP, nameP, authStatusP, authDateP, transStatusP, transDataP, stateP) {
-
-    let config = {
-      headers: authHeader(),
-      params: {
-        page: pageP,
-        name: nameP, 
-        authStatus: authStatusP, 
-        authDate: authDateP, 
-        transStatus: transStatusP, 
-        transData: transDataP, 
-        state: stateP
-      },
-    }
-    
-  //  return axios.get(API_URL + 'patients/filter', config);
- // return axios.get(API_URL + 'patients/'+pageP, config);
-  
-  }*/
 
   getNextPage(pageP, nameP, authStatusP, authDateP, transStatusP, transDataP, stateP) {
 
@@ -143,6 +112,22 @@ class UserService {
       headers: authHeader(),
     }
     return axios.get(API_URL + 'government/details/'+cpf, config);
+  }
+
+  getDetailByCPF(cpf) {
+    let config = {
+      headers: authHeader(),
+    }
+    return axios.get(API_URL + 'patients/details/'+cpf, config);
+  }
+
+  savePatient(data) {
+
+    let config = { headers: authHeader()  };
+    const body = { data: data };
+   
+    return axios.patch(API_URL + 'patients/edit', body, config);
+  
   }
 
 }

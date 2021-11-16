@@ -1,5 +1,6 @@
 import React, { Component, forwardRef } from "react"
 import { Button } from "react-bootstrap"
+import Spinner from 'react-bootstrap/Spinner'
 import Dropdown from 'react-bootstrap/Dropdown'
 import Modal from 'react-bootstrap/Modal'
 import Row from 'react-bootstrap/Row'
@@ -9,6 +10,11 @@ import "react-datepicker/dist/react-datepicker.css"
 import Logo from '../assets/logo-idor.svg'
 import AuthService from "../services/auth.service"
 import UserService from "../services/user.service"
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip'
+import Accordion from 'react-bootstrap/Accordion'   
+import Form from 'react-bootstrap/Form'
+import Col from 'react-bootstrap/Col'
 import './home.scss'
 
 const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
@@ -117,7 +123,11 @@ export default class Home extends Component {
       searchText: null,
       state: null, //estado
       showDetailsTransmission: false,
-      detailsTransmission: Array.from({ length: 0 })
+      detailsTransmission: Array.from({ length: 0 }),
+      loading : false,
+      editCPFshow: false,
+      editCPFREgisters: Array.from({ length: 0 }),
+      linesToEdit: Array.from({ length: 0 }),
     }
 
   }
@@ -160,6 +170,76 @@ export default class Home extends Component {
       }
     );
   }
+
+  openEditDetail = (cpf) => {
+    var that = this;
+    UserService.getDetailByCPF(cpf).then(
+      response => {
+        console.log(response.data);
+        that.setState({
+          editCPFshow: true,
+          editCPFREgisters: response.data,
+          linesToEdit : response.data
+          
+        });
+      }
+    );
+  }
+
+  editPatient = (evt, line, field) => {
+
+    var linesToEdit = this.state.linesToEdit;
+    linesToEdit[line]['EDIT'] = true;
+    linesToEdit[line][field] = evt.target.value;
+    this.setState({
+      linesToEdit : linesToEdit
+    });
+
+
+    if(field === 'NM_PACIENTE' || field === 'DS_CPF') {
+
+      linesToEdit.forEach(element => {
+        element[field] = evt.target.value;
+      });
+
+      this.setState({
+        editCPFREgisters : linesToEdit
+      });
+  
+    }
+  }
+
+
+  handleCloseEditCPF = (action) => {
+var that = this;
+    if(action === 'close') {
+      this.setState({
+        editCPFshow: false,
+        editCPFREgisters: Array.from({ length: 0 }) ,
+        linesToEdit : Array.from({ length: 0 })
+        
+      });
+    } else if(action === 'save') {
+
+
+      UserService.savePatient(this.state.editCPFREgisters).then(
+        response => {
+          if(response.data && response.data.status === 'ERROR'){
+            //todo : APRESENTAR MSG DE ERRO
+            //response.data.message
+          } else{
+            that.handleCloseEditCPF('close');
+            this.configureGrid();
+          }
+
+        });
+  
+     
+      
+    }
+
+  }
+
   /***
    * 
    */
@@ -268,12 +348,14 @@ export default class Home extends Component {
     this.inputFile.current.onchange = function (e) {
       UserService.uploadFile(e.target.files[0]).then(
         response => {
-          console.log(response)
+         that.setState({loading: true});
           UserService.loadFile(response.data.file).then(
             response2 => {
-              that.setState({ loadedRegisters: response2.data.registers })
-              that.configureGrid()
-              that.openDialog()
+              that.setState({ 
+                loadedRegisters: response2.data.registers,
+                loading: false });
+              that.configureGrid();
+              that.openDialog();
               e.target.value = null
             }
           )
@@ -437,19 +519,16 @@ export default class Home extends Component {
       response => {
         this.configureGrid()
       })
-
   }
 
   sendRIAR() {
-    // aaa
-
-    //envia os dados pro server
     UserService.sendRIARByCPF(this.filterCPF()).then(
       response => {
         this.configureGrid()
       })
-
   }
+
+
 
 
   /**
@@ -547,14 +626,14 @@ export default class Home extends Component {
             <div className="select">
               {/* TODO: MUDAR PARA SELECT */}
               {/* <select name="" id="">
-              <option>Status da trasmissão</option>
+              <option>Status da transmissão</option>
               {statusTransmission.map((i, index) => (
                 <option value={i.id} onClick={(evt) => this.handleTransmission(evt, i.id)} key={index}>{i.name}</option>
               ))}
             </select> */}
               <Dropdown>
                 <Dropdown.Toggle variant="default" id="dropdown-basic">
-                  Status da trasmissão
+                  Status da transmissão
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
@@ -625,14 +704,24 @@ export default class Home extends Component {
               <th>Autorização</th>
               <th>Data/Hora da resposta</th>
               <th>Transmitido</th>
-              <th>Data/Hora da trasmissão</th>
+              <th>Data/Hora da transmissão</th>
             </tr>
           </thead>
           <tbody>
             {this.state.items.map((i, index) => (
               <tr key={index}>
-                <td>{index+1}</td>
-                <td>{i['NM_PACIENTE']}</td>
+                <td>
+                  <OverlayTrigger key={index+1} placement='top'
+                    overlay={
+                      <Tooltip id={`tooltip-{index+1}`}>
+                        Editar
+                    </Tooltip>
+                    }>
+                    <Button  variant="link" onClick={()=> this.openEditDetail(i['DS_CPF'])} >{index+1}</Button>
+                  </OverlayTrigger>
+                  
+                </td>
+                <td> {i['NM_PACIENTE']}</td>
                 <td>{i['DS_CPF']}</td>
                 <td>{i['DS_UF']}</td>
                 <td>{i['DS_AUTORIZADO']}</td>
@@ -696,6 +785,26 @@ export default class Home extends Component {
     )
   }
 
+
+  renderModalLoading = () => {
+    return (
+      <Modal show={this.state.loading} onHide={this.handleCloseLoading}
+      backdrop="static"
+        keyboard={false}>
+        <Modal.Header >
+          <Modal.Title>Carregando pacientes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          &nbsp;&nbsp; Aguarde os registros serem processados !
+        </Modal.Body>
+        
+      </Modal>
+    )
+  }
+
   renderModalLoadedFields = () => {
     return (
       <Modal show={this.state.showDialog} onHide={this.handleClose}>
@@ -714,13 +823,10 @@ export default class Home extends Component {
       </Modal>
     )
   }
-  aaaa
-
+  
+  
   renderModalTransmissionDetails = () => {
 
-
-  //  : false,
-  //  detailsTransmission: Array.from({ length: 0 })
     return (
       <Modal show={this.state.showDetailsTransmission} onHide={this.handleCloseTransmissionDetail}
       size="lg">
@@ -730,41 +836,244 @@ export default class Home extends Component {
         <Modal.Body>
 
         <div id="scrollTable" onScroll={this.onScrollTable.bind(this)} style={{ height: 300, overflowY: "scroll" }}>
-      
-        <Table striped bordered hover >
-          <thead>
-            <tr>
-              <th>#</th>
-             {/*   <th>Status</th>*/}
-              <th>Dose</th>
-              {/*  <th>Conteúdo</th>*/}
-              <th>Retorno</th>
-              <th>Data/Hora do envio</th>
-              
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.detailsTransmission.map((i, index) => (
-              <tr key={index}>
-                <td>{index+1}</td>
-                {/* <td>{i['IE_STATUS_ENVIO']}</td>*/}
-                <td>{i['NR_DOSE']}</td>
-                {/* <td>{i['DS_CONTEUDO_HL7']}</td>*/}
-               <td>{i['DS_RETORNO_GOVERNO']}</td>
-                <td>{i['DT_ENVIO_GOVERNO']}</td>
+          <Table striped bordered hover >
+            <thead>
+              <tr>
+                <th>#</th>
+              {/*   <th>Status</th>*/}
+                <th>Dose</th>
+                {/*  <th>Conteúdo</th>*/}
+                <th>Retorno</th>
+                <th>Data/Hora do envio</th>
+                
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {this.state.detailsTransmission.map((i, index) => (
+                <tr key={index}>
+                  <td>{index+1}</td>
+                  {/* <td>{i['IE_STATUS_ENVIO']}</td>*/}
+                  <td>{i['NR_DOSE']}</td>
+                  {/* <td>{i['DS_CONTEUDO_HL7']}</td>*/}
+                <td>{i['DS_RETORNO_GOVERNO']}</td>
+                  <td>{i['DT_ENVIO_GOVERNO']}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         </div>
-
-
-        
-
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleCloseTransmissionDetail}>
+          <Button variant="primary" onClick={this.handleCloseTransmissionDetail}>
             OK
+          </Button>
+         
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+
+
+  renderModalEditPatient = () => {
+
+/***
+ *   editCPFshow: false,
+      editCPFREgisters: Array.from({ length: 0 }),
+ */
+
+    return (
+      <Modal show={this.state.editCPFshow} onHide={this.handleCloseEditCPF}
+      size="lg">
+        <Modal.Header>
+          <Modal.Title>  {this.state.editCPFREgisters 
+                        && this.state.editCPFREgisters.length > 0 && 
+                        this.state.editCPFREgisters[0]['NM_PACIENTE']}
+                        &nbsp;
+                         {this.state.editCPFREgisters 
+                        && this.state.editCPFREgisters.length > 0 && 
+                        this.state.editCPFREgisters[0]['DS_CPF']}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <div style={{ height: 300, overflowY: "scroll" }}>
+        <Accordion defaultActiveKey="0">
+            {this.state.editCPFREgisters.map((i, index) => (
+            <Accordion.Item eventKey={index} key={index}>
+              <Accordion.Header> Dose:&nbsp; {i['NR_DOSE']}</Accordion.Header>
+                <Accordion.Body>
+                  <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Id</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_ID')} 
+                      value={i['DS_ID']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Nome</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'NM_PACIENTE')} 
+                      value={i['NM_PACIENTE']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>CPF/CNS</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_CPF')} 
+                      value={i['DS_CPF']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Telefone</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_TELEFONE')} 
+                      value={i['DS_TELEFONE']}/>
+                    </Form.Group>
+                  </Row>
+
+
+                  <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Fabricante</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_FABRICANTE')} 
+                      value={i['DS_FABRICANTE']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Imunobiológico</Form.Label>
+                      <input size="sm" 
+                      type="number"
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_IMUNOBIOLOGICO')} 
+                      value={i['DS_IMUNOBIOLOGICO']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Lote</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_LOTE')} 
+                      value={i['DS_LOTE']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Validade</Form.Label>
+                      <input size="sm" 
+                      type="date"
+                     
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DT_VALIDADE')} 
+                      value={i['DT_VALIDADE']}/>
+                    </Form.Group>
+                  </Row>
+
+
+                  <Row className="mb-3">
+                    
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Via de administração</Form.Label>
+                      <input size="sm" 
+                      type="number"
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'IE_VIA_ADMINISTRACAO')} 
+                      value={i['IE_VIA_ADMINISTRACAO']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Local de aplicação</Form.Label>
+                      <input size="sm" 
+                      type="number"
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_LOCAL_APLICACAO')} 
+                      value={i['DS_LOCAL_APLICACAO']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Dose</Form.Label>
+                      <input size="sm" 
+                      type="number"
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'NR_DOSE')} 
+                      value={i['NR_DOSE']}/>
+                    </Form.Group>
+
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Data de administração</Form.Label>
+                      <input size="sm" 
+                      type="date"
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DT_ADMINISTRACAO')} 
+                     
+                      value={i['DT_ADMINISTRACAO']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>CNS profissional aplicação</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'CD_CNS_PROFISSIONAL')} 
+                      value={i['CD_CNS_PROFISSIONAL']}/>
+                    </Form.Group>
+                  </Row>
+
+                  <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Estratégia</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'CD_ESTRATEGIA')} 
+                      value={i['CD_ESTRATEGIA']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Protocolo Anvisa</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_PROTOCOLO_ANVISA')} 
+                      value={i['DS_PROTOCOLO_ANVISA']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Protocolo versão</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_PROTOCOLO_VERSAO')} 
+                      value={i['DS_PROTOCOLO_VERSAO']}/>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridCity">
+                      <Form.Label>Registro anvisa</Form.Label>
+                      <input size="sm" 
+                      className="form-control"
+                      onChange={(evt) => this.editPatient(evt, index, 'DS_REGISTRO_ANVISA')} 
+                      value={i['DS_REGISTRO_ANVISA']}/>
+                    </Form.Group>
+                  </Row>
+
+
+                </Accordion.Body>
+              </Accordion.Item>      
+            ))}
+          </Accordion>
+        </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" 
+          onClick = {evt => this.handleCloseEditCPF('close')}>
+            Cancelar
+          </Button>
+          <Button variant="primary"
+           onClick = {evt => this.handleCloseEditCPF('save')}>
+            Salvar
           </Button>
          
         </Modal.Footer>
@@ -803,11 +1112,10 @@ export default class Home extends Component {
 
               {this.renderEmptyRegisters()}
 
-              {/* TODO: carregando
-          */}
-
               {this.renderModalLoadedFields()}
               {this.renderModalTransmissionDetails()}
+              {this.renderModalLoading()}
+              {this.renderModalEditPatient()}
               
             </div>
           </div>
