@@ -543,6 +543,7 @@ var that = this;
         <div className="navbar">
           <div className="container">
 
+          <div className="row">
             <img
               src={Logo}
               width="200"
@@ -550,6 +551,11 @@ var that = this;
               className="d-inline-block align-top"
               alt="Instituto"
             />
+            <div style={{'text-align':'center'}}>
+              ({AuthService.getCurrentUser().state ==='RJ' && 'Rio de Janeiro'}
+              {AuthService.getCurrentUser().state ==='BA' && 'Bahia'})
+              </div>
+            </div>
 
             <div className="row">
               <div className="user-name">
@@ -557,6 +563,7 @@ var that = this;
                   {AuthService.getCurrentUser().nm_pessoa}
                 </strong>
               </div>
+             
               <div>
                 <a href="/login" className="error-i d-flex gap-2" onClick={() => AuthService.logout()} >
                   <i className="bi bi-box-arrow-left"></i>
