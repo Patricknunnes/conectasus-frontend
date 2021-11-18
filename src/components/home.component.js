@@ -835,14 +835,16 @@ var that = this;
   renderModalTransmissionDetails = () => {
 
     return (
-      <Modal show={this.state.showDetailsTransmission} onHide={this.handleCloseTransmissionDetail}
-      size="lg">
+      <Modal show={this.state.showDetailsTransmission} 
+      onHide={this.handleCloseTransmissionDetail}
+      fullscreen={true}
+     >
         <Modal.Header closeButton>
           <Modal.Title>Detalhes da transmissão</Modal.Title>
         </Modal.Header>
         <Modal.Body>
 
-        <div id="scrollTable" onScroll={this.onScrollTable.bind(this)} style={{ height: 300, overflowY: "scroll" }}>
+        <div id="scrollTable" onScroll={this.onScrollTable.bind(this)} >
           <Table striped bordered hover >
             <thead>
               <tr>
@@ -852,7 +854,7 @@ var that = this;
                 {/*  <th>Conteúdo</th>*/}
                 <th>Retorno</th>
                 <th>Data/Hora do envio</th>
-                
+                <th>Chave no banco</th>
               </tr>
             </thead>
             <tbody>
@@ -862,8 +864,9 @@ var that = this;
                   {/* <td>{i['IE_STATUS_ENVIO']}</td>*/}
                   <td>{i['NR_DOSE']}</td>
                   {/* <td>{i['DS_CONTEUDO_HL7']}</td>*/}
-                <td>{i['DS_RETORNO_GOVERNO']}</td>
+                  <td>{i['DS_RETORNO_GOVERNO']}</td>
                   <td>{i['DT_ENVIO_GOVERNO']}</td>
+                  <td>{i['NR_SEQUENCIA']}</td>
                 </tr>
               ))}
             </tbody>
@@ -890,7 +893,8 @@ var that = this;
 
     return (
       <Modal show={this.state.editCPFshow} onHide={this.handleCloseEditCPF}
-      size="lg">
+      fullscreen={true}
+     >
         <Modal.Header>
           <Modal.Title>  {this.state.editCPFREgisters 
                         && this.state.editCPFREgisters.length > 0 && 
@@ -901,7 +905,8 @@ var that = this;
                         this.state.editCPFREgisters[0]['DS_CPF']}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div style={{ height: 300, overflowY: "scroll" }}>
+        <div >
+          
         <Accordion defaultActiveKey="0">
             {this.state.editCPFREgisters.map((i, index) => (
             <Accordion.Item eventKey={index} key={index}>
@@ -1072,6 +1077,8 @@ var that = this;
             ))}
           </Accordion>
         </div>
+        <br/>
+        <div>Chave no banco: {this.state.editCPFREgisters && this.state.editCPFREgisters[0] && this.state.editCPFREgisters[0]['CHAVE']}</div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" 
@@ -1131,16 +1138,3 @@ var that = this;
     )
   }
 }
-
-
-//file update
-//https://www.geeksforgeeks.org/file-uploading-in-react-js/
-
-//https://codepen.io/rkotze/pen/zjRXYr
-
-
-//outra opção de scroll
-/** https://stackoverflow.com/questions/39325581/how-to-add-scroll-event-in-react-component/39326139 */
-
-
-//https://reactdatepicker.com/
