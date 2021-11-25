@@ -21,6 +21,13 @@ const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
   <i className="bi bi-calendar text-info" onClick={onClick} ref={ref}></i>
 ))
 
+const ButtonDatePicker  = forwardRef(({ value, onClick }, ref) => (
+  <button className="form-control" onClick={onClick} ref={ref}>
+    {value}
+  </button>
+));
+
+
 const estados = [
 
   { id: "", name: "Selecione" },
@@ -190,7 +197,16 @@ export default class Home extends Component {
 
     var linesToEdit = this.state.linesToEdit;
     linesToEdit[line]['EDIT'] = true;
-    linesToEdit[line][field] = evt.target.value;
+    if(field.startsWith('DT_')){
+      if(evt){
+        linesToEdit[line][field] = evt.getFullYear()+'-'+(evt.getMonth()+1)+"-"+evt.getDate();
+      }else{
+        linesToEdit[line][field] = null;
+      }
+    }else{
+      linesToEdit[line][field] = evt.target.value;
+    }
+    
     this.setState({
       linesToEdit : linesToEdit
     });
@@ -663,16 +679,16 @@ var that = this;
             </div >
           </div>
 
-          <div className="mb-2 col-12 col-sm-6 col-lg-4 col-xl-1">
+         {/* <div className="mb-2 col-12 col-sm-6 col-lg-4 col-xl-1">
             <div className="select">
-              {/* TODO: MUDAR PARA SELECT */}
+              {/* TODO: MUDAR PARA SELECT * /}
               {/* <select name="" id="">
               <option>UF</option>
               {estados.map((i, index) => (
                 <option value={i.id} onClick={(evt) => this.handleState(evt, i.id)} key={index}>{i.name}</option>
               ))}
-            </select> */}
-              <Dropdown>
+            </select> * /}
+             {/* <Dropdown>
                 <Dropdown.Toggle variant="default" id="dropdown-basic">
                   UF
                 </Dropdown.Toggle>
@@ -682,8 +698,9 @@ var that = this;
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
+                  * /}
             </div>
-          </div>
+          </div> */}
         </Row>
       </div>
 
@@ -973,16 +990,21 @@ var that = this;
                       value={i['DS_LOTE']}/>
                     </Form.Group>
 
+                  
                     <Form.Group as={Col} controlId="formGridCity">
                       <Form.Label>Validade</Form.Label>
-                      <input size="sm" 
-                      type="date"
-                     
+                      <DatePicker 
                       className="form-control"
+                      dateFormat="dd/MM/yyyy"
                       onChange={(evt) => this.editPatient(evt, index, 'DT_VALIDADE')} 
-                      value={i['DT_VALIDADE']}/>
+                      selected={this.parseDate(i['DT_VALIDADE'])}
+                      customInput={<ButtonDatePicker />}
+                      />
                     </Form.Group>
+
                   </Row>
+
+
 
 
                   <Row className="mb-3">
@@ -1019,14 +1041,17 @@ var that = this;
 
                   <Row className="mb-3">
                     <Form.Group as={Col} controlId="formGridCity">
-                      <Form.Label>Data de administração</Form.Label>
-                      <input size="sm" 
-                      type="date"
-                      className="form-control"
-                      onChange={(evt) => this.editPatient(evt, index, 'DT_ADMINISTRACAO')} 
-                     
-                      value={i['DT_ADMINISTRACAO']}/>
+                      <Form.Label>Administração</Form.Label>
+
+                      <DatePicker 
+                       className="form-control"
+                        dateFormat="dd/MM/yyyy"
+                        onChange={(evt) => this.editPatient(evt, index, 'DT_ADMINISTRACAO')} 
+                        selected={this.parseDate(i['DT_ADMINISTRACAO'])}
+                        customInput={<ButtonDatePicker />}
+                      />
                     </Form.Group>
+
 
                     <Form.Group as={Col} controlId="formGridCity">
                       <Form.Label>CNS profissional aplicação</Form.Label>
@@ -1094,6 +1119,15 @@ var that = this;
       </Modal>
     )
   }
+
+// parse a date in yyyy-mm-dd format
+ parseDate= (input)=> {
+
+  let parts = input.split('-');
+
+  // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
+  return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
+}
 
   /**
    * 
