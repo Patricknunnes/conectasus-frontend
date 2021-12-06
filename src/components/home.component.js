@@ -132,6 +132,7 @@ export default class Home extends Component {
       showDetailsTransmission: false,
       detailsTransmission: Array.from({ length: 0 }),
       loading : false,
+      loadingGov : false,
       editCPFshow: false,
       editCPFREgisters: Array.from({ length: 0 }),
       linesToEdit: Array.from({ length: 0 }),
@@ -538,9 +539,12 @@ var that = this;
   }
 
   sendRIAR() {
+    var that = this;
+    this.setState({loadingGov: true});
     UserService.sendRIARByCPF(this.filterCPF()).then(
       response => {
-        this.configureGrid()
+        that.setState({loadingGov: false});
+        this.configureGrid();
       })
   }
 
@@ -817,6 +821,25 @@ var that = this;
         keyboard={false}>
         <Modal.Header >
           <Modal.Title>Carregando pacientes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          &nbsp;&nbsp; Aguarde os registros serem processados !
+        </Modal.Body>
+        
+      </Modal>
+    )
+  }
+
+  renderModalSendingGov = () => {
+    return (
+      <Modal show={this.state.loadingGov} onHide={this.handleCloseLoadingGov}
+      backdrop="static"
+        keyboard={false}>
+        <Modal.Header >
+          <Modal.Title>Enviando pacientes</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Spinner animation="border" role="status">
@@ -1164,6 +1187,7 @@ var that = this;
               {this.renderModalTransmissionDetails()}
               {this.renderModalLoading()}
               {this.renderModalEditPatient()}
+              {this.renderModalSendingGov()}
               
             </div>
           </div>
