@@ -123,6 +123,7 @@ export default class Home extends Component {
       page: 1,
       showDialog: false,
       loadedRegisters: Array.from({ length: 0 }),
+      notLoadedRegisters: Array.from({ length: 0 }),
       authorizationStatus: null,//status da autorização
       authorizationDate: null, //data da autorização
       transmissionStatus: null, //Status da transmissão
@@ -145,7 +146,8 @@ export default class Home extends Component {
    */
   clearLoadedRegisters = () => {
     this.setState({
-      loadedRegisters: Array.from({ length: 0 })
+      loadedRegisters: Array.from({ length: 0 }),
+      notLoadedRegisters: Array.from({ length: 0 })
     })
   }
 
@@ -183,7 +185,7 @@ export default class Home extends Component {
     var that = this;
     UserService.getDetailByCPF(cpf).then(
       response => {
-        console.log(response.data);
+      //  console.log(response.data);
         that.setState({
           editCPFshow: true,
           editCPFREgisters: response.data,
@@ -270,7 +272,8 @@ var that = this;
 
     this.setState({
       showDialog: false,
-      loadedRegisters: Array.from({ length: 0 })
+      loadedRegisters: Array.from({ length: 0 }),
+      notLoadedRegisters: Array.from({ length: 0 })
     })
   }
 
@@ -368,9 +371,12 @@ var that = this;
          that.setState({loading: true});
           UserService.loadFile(response.data.file).then(
             response2 => {
+              console.log( response2.data.registers);
               that.setState({ 
-                loadedRegisters: response2.data.registers,
+                loadedRegisters: response2.data.registers.createdRegister,
+                notLoadedRegisters: response2.data.registers.duplicated,
                 loading: false });
+                
               that.configureGrid();
               that.openDialog();
               e.target.value = null
@@ -545,11 +551,8 @@ var that = this;
       response => {
         that.setState({loadingGov: false});
         this.configureGrid();
-      })
+    });
   }
-
-
-
 
   /**
    * 
@@ -858,7 +861,32 @@ var that = this;
         <Modal.Header closeButton>
           <Modal.Title>Pacientes carregados</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Foram carregados {this.state.loadedRegisters.length} registros. Deseja enviar solicitação de autorização para os pacientes carregados?</Modal.Body>
+        <Modal.Body>
+            Foram carregados {this.state.loadedRegisters.length} registros. Deseja enviar solicitação de autorização para os pacientes carregados?
+            <br/>
+          <div  style={this.state.notLoadedRegisters && this.state.notLoadedRegisters.length >0 ? {} : { display: 'none' }}>
+            <Table striped bordered hover >
+              <thead>
+                <tr>
+                  <th>Erros</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.notLoadedRegisters.map((i, index) => (
+                  <tr key={index}>  
+                    <td>{i}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+
+
+
+
+
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.handleClose}>
             Não
@@ -870,6 +898,8 @@ var that = this;
       </Modal>
     )
   }
+
+  
   
   
   renderModalTransmissionDetails = () => {

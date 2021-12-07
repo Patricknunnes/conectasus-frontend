@@ -14,9 +14,7 @@ class UserService {
    
     let that = this;
     axios.interceptors.response.use(function (response) {
-    //  console.log('=====>response'+response);
-    //  console.log('=====>response'+response.data);
-      console.log(that.props);
+
       if (response && response.headers && response.headers['x-acess-token']) {
         let user = JSON.parse(localStorage.getItem("user"))
         user.accessToken = response.headers['x-acess-token'];
